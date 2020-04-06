@@ -12,28 +12,11 @@
       enter-active-class="animated fadeInUp"
       leave-active-class="animated fadeOutDown"
     >
-      <div v-for="(todo,index) in todosFiltered" :key="todo.id" class="todo-item">
-        <div class="todo-item-left">
-          <input type="checkbox" v-model="todo.completed" />
-          <div
-            v-if="!todo.editing"
-            @dblclick="editTodo(todo)"
-            class="todo-item-label"
-            :class="{completed:todo.completed}"
-          >{{ todo.title }}</div>
-          <input
-            v-else
-            type="text"
-            class="todo-item-edit"
-            @blur="doneEdit(todo)"
-            @keyup.esc="cancelEdit(todo)"
-            @keyup.enter="doneEdit(todo)"
-            v-model="todo.title"
-            v-focus
-          />
-        </div>
-        <div class="remove-item" @click="removeTodo(index)">&times;</div>
-      </div>
+      <todo-item v-for="(todo,index) in todosFiltered" :key="todo.id" :todo='todo' :index='index'
+      :checkAll='!anyRemaining' @removedTodo='removeTodo'
+      @finishedEdit='finishedEdit'>
+        
+      </todo-item>
     </transition-group>
     <div class="extra-container">
       <div>
@@ -58,8 +41,12 @@
   </div>
 </template>
 <script>
+import TodoItem from './TodoItem'
 export default {
   name: "todo-list",
+  components:{
+    TodoItem,
+  },
   data() {
     return {
       newTodo: "",
@@ -121,18 +108,6 @@ export default {
       this.newTodo = "";
       this.idForTodo++;
     },
-    editTodo(todo) {
-      this.beforeEditCache = todo.title;
-      todo.editing = true;
-    },
-    cancelEdit(todo) {
-      todo.title = this.beforeEditCache;
-      todo.editing = false;
-    },
-    doneEdit(todo) {
-      if (todo.title.length == 0) todo.title = this.beforeEditCache;
-      todo.editing = false;
-    },
     removeTodo(index) {
       this.todos.splice(index, 1);
     },
@@ -141,12 +116,14 @@ export default {
     },
     clearCompleted() {
       this.todos = this.todos.filter(todo => !todo.completed);
+    },
+    finishedEdit(data){
+      this.todos.splice(data.index,1,data.todo)
     }
   }
 };
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang='scss'>
 @import url("https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css");
 .todo-input {
@@ -164,7 +141,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  animation-duration:0.3s;
+  animation-duration:0.2s;
 }
 .remove-item {
   cursor: pointer;
