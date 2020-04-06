@@ -1,6 +1,6 @@
 # todo-vue
 
-> Project for Learn vue
+> Project to Learn vue
 
 ## Build Setup
 
